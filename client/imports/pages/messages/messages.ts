@@ -5,7 +5,8 @@ import { _ } from 'meteor/underscore';
 import * as Moment from 'moment';
 import { Observable, Subscription, Subscriber } from 'rxjs';
 import { Messages } from '../../../../imports/collections';
-import { Chat, Message, MessageType } from '../../../../imports/models';
+import { Chat, Message, MessageType, Location } from '../../../../imports/models';
+import { MessagesAttachmentsComponent } from './messages-attachments';
 import { MessagesOptionsComponent } from './messages-options';
 import template from './messages.html';
  
@@ -215,5 +216,43 @@ export class MessagesPage implements OnInit, OnDestroy {
       // Zero the input field
       this.message = '';
     });
+  }
+    sendLocationMessage(location: Location): void {
+    MeteorObservable.call('addMessage', MessageType.LOCATION,
+      this.selectedChat._id,
+      `${location.lat},${location.lng},${location.zoom}`
+    ).zone().subscribe(() => {
+      // Zero the input field
+      this.message = '';
+    });
+  }
+  
+  showAttachments(): void {
+    const popover = this.popoverCtrl.create(MessagesAttachmentsComponent, {
+      chat: this.selectedChat
+    }, {
+      cssClass: 'attachments-popover'
+    });
+ 
+    popover.onDidDismiss((params) => {
+          if (params) {
+        if (params.messageType === MessageType.LOCATION) {
+          const location = params.selectedLocation;
+          this.sendLocationMessage(location);
+        }
+      }
+    });
+ 
+    popover.present();
+  }
+   
+  getLocation(locationString: string): Location {
+    const splitted = locationString.split(',').map(Number);
+ 
+    return <Location>{
+      lat: splitted[0],
+      lng: splitted[1],
+      zoom: Math.min(splitted[2] || 0, 19)
+    };
   }
 }
