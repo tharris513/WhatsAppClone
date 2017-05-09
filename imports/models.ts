@@ -1,3 +1,5 @@
+import { Meteor } from 'meteor/meteor';
+
 export const DEFAULT_PICTURE_URL = '/assets/default-profile-pic.svg';
  
 export interface Profile {
@@ -14,6 +16,7 @@ export interface Chat {
   title?: string;
   picture?: string;
   lastMessage?: Message;
+  memberIds?: string[];
 }
  
 export interface Message {
@@ -25,3 +28,7 @@ export interface Message {
   ownership?: string;
   type?: MessageType;
   }
+  
+  export interface User extends Meteor.User {
+  profile?: Profile;
+}
